@@ -1,1 +1,16 @@
 
+---
+hosts: bastion
+become: false
+gather_facts: true 
+tasks: 
+  - name: spin up virtual machines
+    cmd: vagrant up "{{ VAGRANT_BOX }}" 
+    
+  - name: ensure ntpd is at the latest version
+    yum: pkg=ntp state=latest
+    notify:
+    - restart ntpd
+handlers:
+  - name: restart ntpd
+    service: name=ntpd state=restarted
