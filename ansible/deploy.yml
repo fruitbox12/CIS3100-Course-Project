@@ -1,0 +1,19 @@
+---
+- name: provision hosts before build/ci
+  hosts: provisioner
+  become: true
+  gather_facts: true
+  vars:
+    - deploy_dns: true
+    - deploy_dhcp: true
+    - install_depends: true
+    - create_repo: true
+  roles:
+    - setup_prereq
+    
+- name: deploy app
+  hosts: app
+  become: true
+  gather_facts: false
+  roles:
+    - deploy_container
