@@ -3,10 +3,9 @@ Demo of DevOps and Site Reliability Engineering techniques for vanilla Business 
 ---
 # How to use:
 run: ```ansible-playbook -i inventory deploy.yml -vvv```
-Kubernetes Setup Using Ansible and Vagrant
+Setup Using Ansible and Vagrant
 ==========================================
-Kubernetes clusters with several nodes provide a production-like environment with a number of benefits. Minikube is a great place to start, but it doesn't allow you to work with multi-node clusters, which can help you overcome difficulties or faults connected to application design and architecture. Ops, for example, can reproduce an issue in a multi-node cluster, and testers may deploy several versions of an application to run test cases and verify modifications. These advantages allow teams to resolve challenges more quickly, making them more agile.
-Why use Vagrant and Ansible?[](https://kubernetes.io/blog/2019/03/15/kubernetes-setup-using-ansible-and-vagrant/#why-use-vagrant-and-ansible)
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Vagrant is a tool that makes it simple to establish a virtual environment and avoids the issues that lead to the works-on-my-machine syndrome. It works with a variety of providers, including Oracle VirtualBox, VMware, Docker, and others. By utilizing configuration files, we may construct a disposable environment.
 
