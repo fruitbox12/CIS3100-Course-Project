@@ -1,0 +1,139 @@
+---
+- name: Add a system user
+  user:
+    name: "{{ react_system_user }}"
+    shell: /bin/bash
+    group: "{{ react_system_group }}"
+    append: true
+    create_home: true
+
+- name: Ensure that the required directories are present
+  file:
+    state: directory
+    owner: "{{ react_system_user }}"
+    group: "{{ react_system_group }}"
+    path: "{{ item }}"
+  when:
+    - item is defined
+    - item is not none
+  with_items:
+    - "{{ react_versioned_path }}"
+    - "{{ react_checkout_path }}"
+    - "{{ react_system_user_home }}/.ssh"
+
+- name: Install react pre-requisites for local deployment
+  block:
+    - name: Install system-wide dependencies
+      apt:
+        name: "{{ react_local_system_wide_dependencies }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 600
+
+    - name: Git clone local
+      git:
+        accept_hostkey: "yes"
+        repo: "{{ react_git_url }}"
+        dest: "{{ react_local_checkout_path }}"
+        version: "{{ react_git_version }}"
+        depth: 1
+        force: true
+      become: true
+      delegate_to: localhost
+      become_user: "{{ react_local_user }}"
+  when: " not react_remote_js_build|bool"
+
+- name: Remote Git clone
+  block:
+    - name: Detect if Node is installed
+      command: node --version
+      register: node_version
+      changed_when: false
+      ignore_errors: true
+
+    - name: Download node
+      shell: >
+        set -o pipefail &&
+        curl -sL https://deb.nodesource.com/setup_{{ react_node_version }}
+        | sudo -E bash -
+      become: true
+      become_user: root
+      args:
+        warn: false
+        executable: /bin/bash
+      when: node_version.rc != 0
+
+    - name: Add yarn apt key to keyring
+      apt_key:
+        url: https://dl.yarnpkg.com/debian/pubkey.gpg
+        state: present
+
+    - name: Add yarn to sources
+      lineinfile:
+        create: true
+        line: "deb https://dl.yarnpkg.com/debian/ stable main"
+        path: /etc/apt/sources.list.d/yarn.list
+        regexp: "deb https://dl.yarnpkg.com/debian/ stable main"
+        state: present
+      become: true
+      become_user: root
+
+    - name: Update apt cache
+      apt:
+        update_cache: "true"
+
+    - name: Install system-wide dependencies
+      apt:
+        name: "{{ react_remote_system_wide_dependencies }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 600
+
+    - name: Git clone without key
+      git:
+        accept_hostkey: "yes"
+        repo: "{{ react_git_url }}"
+        dest: "{{ react_checkout_path }}"
+        version: "{{ react_git_version }}"
+        depth: 1
+      become: true
+      become_user: "{{ react_system_user }}"
+      when:
+        - react_git_key is not defined or react_git_key is none
+
+    - name: Copy git key
+      copy:
+        content: "{{ react_git_key }}"
+        dest: "{{ react_system_user_home }}/.ssh/{{ react_git_key_filename }}"
+        owner: "{{ react_system_user }}"
+        mode: 0600
+      no_log: false
+      when:
+        - react_git_key is defined
+        - react_git_key is not none
+
+    - name: Git clone with key
+      git:
+        accept_hostkey: "yes"
+        repo: "{{ react_git_url }}"
+        dest: "{{ react_checkout_path }}"
+        version: "{{ react_git_version }}"
+        depth: 1
+        key_file: "{{ react_system_user_home }}/.ssh/{{ react_git_key_filename }}"
+      become: true
+      become_user: "{{ react_system_user }}"
+      when:
+        - react_git_key is defined
+        - react_git_key is not none
+
+    - name: Remove Git Key
+      file:
+        state: absent
+        path: "{{ react_system_user_home }}/.ssh/{{ react_git_key_filename }}"
+      become: true
+      become_user: "{{ react_system_user }}"
+      when:
+        - react_git_key is defined
+        - react_git_key is not none
+        - react_remove_git_key
+  when: "react_remote_js_build|bool"
