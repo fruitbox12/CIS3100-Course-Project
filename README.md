@@ -16,7 +16,7 @@ Ansible is a software configuration management automation engine for infrastruct
 -   Oracle VirtualBox can be used as a Vagrant provider or make use of similar providers as described in Vagrant's official [documentation](https://www.vagrantup.com/docs/providers/).
 -   Ansible should be installed in your machine. Refer to the [Ansible installation guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for platform specific installation.
 
-Setup overview[](https://kubernetes.io/blog/2019/03/15/kubernetes-setup-using-ansible-and-vagrant/#setup-overview)
+Examble Kubernetes Setup overview[](https://kubernetes.io/blog/2019/03/15/kubernetes-setup-using-ansible-and-vagrant/#setup-overview)
 ------------------------------------------------------------------------------------------------------------------
 
 A Kubernetes cluster consisting of one master and two worker nodes will be set up. Provisioning will be done using Ansible playbooks and Ubuntu Xenial 64-bit OS on all nodes.
